@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Personal Shade: HD Pro Edition</title>
+    <style>
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #fce4ec; font-family: sans-serif; overflow: hidden; }
+ 
+/* 🌸 타이틀 화면 전체 덮기 🌸 */
+        .title-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('assets/title.jpg') no-repeat center center; /* 올려주신 이미지 */
+            background-size: cover;
+            z-index: 200; /* 게임 화면보다 무조건 위에 오도록 */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; /* 버튼을 이미지 아래쪽으로 밀어냄 */
+            align-items: center;
+            padding-bottom: 100px; /* 바닥에서 살짝 띄움 */
+            transition: opacity 0.8s ease, visibility 0.8s ease; /* 사르르 사라지는 효과 */
+            border-radius: 30px; /* 폰 테두리에 맞게 둥글게 */
+        }
+
+        .title-overlay.hide { opacity: 0; visibility: hidden; }
+/* 👇 여기서부터 복사해서 붙여넣으세요 👇 */
+        /* ✨ 타이틀 전용 반짝이 입자 */
+        /* ✨ 훨씬 더 잘 보이는 영롱한 반짝이 입자 */
+        .title-sparkle {
+            position: absolute;
+            background: radial-gradient(circle, #fff 10%, rgba(255,255,255,0) 70%); /* 중심은 밝고 외곽은 퍼지는 빛 */
+            border-radius: 50%;
+            pointer-events: none;
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8); /* 빛 번짐 효과 추가 */
+            animation: sparkle-float linear infinite;
+            z-index: 205;
+        }
+
+        @keyframes sparkle-float {
+            0% { transform: translateY(0) scale(0); opacity: 0; }
+            20% { opacity: 1; } /* 빠르게 나타남 */
+            80% { opacity: 0.8; }
+            100% { transform: translateY(-150px) scale(1.2); opacity: 0; } /* 더 높이 올라감 */
+        }
+        /* 👆 여기까지 복사 끝 👆 */
+        /* 💎 고급스러운 유리 질감 START 버튼 🌸 */
+        .start-button-3d {
+            position: relative;
+            border: none;
+            background: transparent;
+            padding: 0;
+            cursor: pointer;
+            z-index: 210;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .button-front {
+            display: block;
+            padding: 14px 55px;
+            border-radius: 30px;
+            font-size: 22px;
+            font-weight: 400;
+            letter-spacing: 3px;
+            
+            /* 유리 질감 (반투명 + 블러) */
+            background: rgba(255, 255, 255, 0.25); 
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px);
+            
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 
+                0 8px 32px rgba(255, 105, 180, 0.3), /* 은은한 핑크빛 그림자 */
+                inset 0 0 15px rgba(255, 255, 255, 0.3); /* 버튼 안쪽 반짝임 */
+                
+            transform: translateY(-6px); /* 살짝 떠 있는 입체감 */
+            transition: all 0.2s cubic-bezier(.3, .7, .4, 1);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* 클릭 시 '진짜' 눌리는 느낌 */
+        .start-button-3d:active .button-front {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.2);
+            background: rgba(255, 255, 255, 0.35);
+        }       
+        .shake-effect { animation: shake 0.1s infinite; }
+        @keyframes shake {
+            0% { transform: translate(0.2px, 0.2px); }
+            25% { transform: translate(-0.2px, -0.1px); }
+            50% { transform: translate(-0.1px, 0.2px); }
+            75% { transform: translate(0.1px, -0.2px); }
+            100% { transform: translate(0.2px, 0.2px); }
+        }
+
+        .phone-container {
+            height: 92vh; 
+            aspect-ratio: 1080 / 1920; 
+            background: url('assets/basic.jpg') no-repeat center center;
+            background-size: cover;
+            border: 10px solid #1a1a1a; 
+            border-radius: 40px; 
+            box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        /* 🌸 스테이지 UI 텍스트 */
+        .stage-text {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            color: white;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.4);
+            z-index: 20;
+        }
+
+        .header-ui { padding: 55px 25px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .target-circle { width: 75px; height: 75px; border-radius: 50%; border: 3px solid white; box-shadow: 0 6px 15px rgba(0,0,0,0.2); transition: background-color 0.5s ease; }
+        .remover-paper { width: 60px; height: 75px; background: #fff; border-radius: 3px; box-shadow: 2px 2px 10px rgba(0,0,0,0.15); position: relative; display: inline-block; }
+        .remover-paper::after { content: ''; position: absolute; top: 0; right: 0; border-width: 0 18px 18px 0; border-style: solid; border-color: #f0f0f0 #fff; }
+        .remover-box { text-align: center; cursor: pointer; transition: transform 0.2s; }
+        .canvas-area { flex: 1; position: relative; }
+        #lip-canvas { width: 100%; height: 100%; }
+        
+        .palette-ui { min-height: 90px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(15px); display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; border-top: 1px solid rgba(255,255,255,0.3); padding: 10px 20px; position: absolute; bottom: 0; width: 100%; box-sizing: border-box; }
+        .color-chip { width: 55px; height: 55px; border-radius: 50%; border: 3px solid white; box-shadow: 0 6px 15px rgba(0,0,0,0.15); cursor: grab; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; outline: none; user-select: none; }
+        .color-chip.small { width: 45px; height: 45px; }
+       .palette-ui.left-align { justify-content: flex-start; padding-left: 25px; }
+        
+        .success-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: transparent; opacity: 0; pointer-events: none; transition: 0.6s; z-index: 100; }
+        .success-overlay.show { opacity: 1; }
+        .success-text { color: white; font-size: 32px; text-align: center; font-weight: 200; text-shadow: 0 0 20px rgba(255,105,180,1); line-height: 1.4; }
+
+        /* 🌸 플라워 샤워 이펙트 컨테이너 및 꽃잎 CSS */
+        #flower-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 99; overflow: hidden; }
+        .petal {
+            position: absolute;
+            background: rgba(255, 182, 193, 0.85); /* 여리여리한 벚꽃 핑크 */
+            border-radius: 15px 0 15px 0; /* 꽃잎 모양 */
+            width: 12px; height: 12px;
+            box-shadow: 0 0 8px rgba(255,105,180,0.4);
+            animation: fall linear forwards, sway 2s ease-in-out infinite alternate;
+        }
+        @keyframes fall { to { top: 110%; } }
+        @keyframes sway { from { transform: translateX(-20px) rotate(0deg); } to { transform: translateX(20px) rotate(60deg); } }
+/* 📖 튜토리얼 배경 (sub.jpg 적용) */
+        .tutorial-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('assets/sub.jpg') no-repeat center center;
+            background-size: cover; z-index: 300;
+            display: flex; justify-content: center; align-items: center;
+            border-radius: 30px; transition: opacity 0.5s ease;
+        }
+
+        .tutorial-content {
+            background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            width: 82%; padding: 35px 20px; border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3); text-align: center; color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .tutorial-title { font-weight: 300; letter-spacing: 4px; margin-bottom: 25px; font-size: 22px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .step-list { text-align: left; display: inline-block; }
+.step-item { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 18px; /* 간격을 살짝 넓혀서 여유롭게 */
+            font-size: 14.5px;   /* 글씨 크기 미세 조정 */
+            line-height: 1.5;    /* 줄 간격을 넓혀 고급스러운 가독성 확보 */
+            letter-spacing: 0.5px; /* 자간을 살짝 벌려 세련미 추가 */
+        }        
+    .step-num { 
+            width: 24px; height: 24px; background: white; color: #ff69b4; 
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-weight: bold; margin-right: 12px; flex-shrink: 0;
+        }
+        .step-item b { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+
+    </style>
+</head>
+
+<body>
+    <div class="phone-container" id="main-frame">
+
+        <div id="title-screen" class="title-overlay">
+            <button id="start-btn" class="start-button-3d">
+                <span class="button-front">START</span>
+            </button>
+        </div>
+
+        <div id="tutorial-screen" class="tutorial-overlay" style="display: none; opacity: 0;">
+            <div class="tutorial-content">
+                <h2 class="tutorial-title">HOW TO PLAY</h2>
+                <div class="step-list">
+                    <div class="step-item">
+                        <span class="step-num">1</span>
+                        <p>상단의 <b>TARGET 쉐이드</b>를 섬세하게 분석하세요.</p>
+                    </div>
+                    <div class="step-item">
+                        <span class="step-num">2</span>
+                        <p>원하는 컬러를 캔버스로 <b>부드럽게 드래그</b>하세요.</p>
+                    </div>
+                    <div class="step-item">
+                        <span class="step-num">3</span>
+                        <p>정교한 블렌딩으로 <b>시그니처 컬러</b>를 완성하세요.</p>
+                    </div>
+                   <div class="step-item">
+                        <span class="step-num">4</span>
+                        <p>컬러 스펙트럼이 확장될수록 <b>프로 아티스트의 미세한 감각</b>이 요구됩니다.</p>
+                    </div>
+                </div>
+                <button id="close-tutorial" class="start-button-3d" style="margin-top: 30px;">
+                    <span class="button-front">GO!</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="stage-ui" class="stage-text">
+            STAGE 1 <span id="help-btn" style="cursor:pointer; margin-left:8px; font-size:16px; opacity:0.6;">?</span>
+        </div>
+        
+        <div id="flower-container"></div>
+
+        <div class="header-ui">
+            <div class="target-box">
+                <div id="target-view" class="target-circle"></div>
+                <div style="color:white; font-size:15px; font-weight:bold; margin-top:10px; text-shadow:0 2px 4px #000; text-align:center;">TARGET</div>
+            </div>
+
+            <div style="position: absolute; top: 25px; left: 50%; transform: translateX(-50%); text-align: center; width: 100%;"> 
+                <div id="guide-text" style="font-size: 16px; margin-bottom: 2px; color:white; letter-spacing:1px; font-weight:300; text-shadow:0 2px 5px rgba(0,0,0,0.6);">
+                    Mix <span style="font-weight:600;" id="req-count-text">2 colors</span>
+                </div>
+                <div style="font-size: 11px; opacity: 0.9; color:white; margin-top:2px; text-shadow:0 1px 3px rgba(0,0,0,0.5);">
+                    to find the shade
+                </div>
+            </div>
+
+            <div class="remover-box" id="remover-btn">
+                <div class="remover-paper"></div>
+                <div style="color:white; font-size:15px; font-weight:bold; margin-top:10px; text-shadow:0 2px 4px #000;">REMOVER</div>
+            </div>
+        </div>
+
+        <div class="canvas-area" id="drop-zone">
+            <canvas id="lip-canvas"></canvas>
+            <div id="success-ui" class="success-overlay">
+                <div class="success-text">PERFECT SHADE<br><span style="font-size:20px;">Color development complete</span></div>
+            </div>
+        </div>
+
+        <div class="palette-ui" id="palette"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
