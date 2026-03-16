@@ -118,20 +118,34 @@
             100% { transform: translate(0.2px, 0.2px); }
         }
 
-        .phone-container {
-            height: 92vh; 
-            aspect-ratio: 1080 / 1920; 
-            background: url('assets/basic.jpg') no-repeat center center;
-            background-size: cover;
-            border: 10px solid #1a1a1a; 
-            border-radius: 40px; 
-            box-shadow: 0 25px 60px rgba(0,0,0,0.4);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-        }
+        /* ... 기타 코드 ... */
+.phone-container {
+    /* 👇 양 옆과 위아래에 세련된 공간(여백)을 추가합니다 (위아래 3vh, 좌우 자동) 👇 */
+    margin: 3vh auto; 
+    
+    /* 화면 크기에 맞춰 스마트폰 프레임 높이를 최적화 (여백 고려) */
+    height: calc(100vh - 6vh); 
+    
+    aspect-ratio: 1080 / 1920; 
+    background: url('assets/basic.jpg') no-repeat center center;
+    background-size: cover;
+    
+    /* 👇 1. 검은색 테두리(#1a1a1a)를 고급스러운 매트 그레이(#d1d1d1)로 변경 👇 */
+    /* 👇 2. 테두리 두께를 살짝 얇게(8px) 하여 세련미 추가 👇 */
+    border: 8px solid #d1d1d1;  
+    
+    border-radius: 40px; 
+    
+    /* 그림자를 살짝 더 부드럽게 보정 */
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
+    
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+/* ... 기타 코드 ... */
 
         /* 🌸 스테이지 UI 텍스트 */
         .stage-text {
