@@ -74,22 +74,10 @@ const GameEngine = {
         
         // 💎 [추가] 새 스테이지 진입 시 오답 스택(누진세) 초기화
         this.config.currentStageFails = 0;
-        this.updateRPDisplay(); // 명성치 UI 갱신
+       this.updateRPDisplay(); // 명성치 UI 갱신
 
         document.getElementById('req-count-text').innerText = `${reqCount} colors`;
-        document.getElementById('stage-ui').innerHTML = `STAGE ${this.config.currentStage} <span id="help-btn" style="cursor:pointer; margin-left:8px; font-size:16px; opacity:0.6;">?</span>`;
-
-        // 기존 이벤트 리스너 다시 달아주기 (innerHTML로 덮어씌워서 헬프 버튼 기능 잃지 않도록)
-        setTimeout(() => {
-            const helpBtn = document.getElementById('help-btn');
-            if (helpBtn) {
-                helpBtn.onclick = () => {
-                    const tutorialScreen = document.getElementById('tutorial-screen');
-                    tutorialScreen.style.display = 'flex';
-                    setTimeout(() => { tutorialScreen.style.opacity = '1'; }, 50);
-                };
-            }
-        }, 100);
+        document.getElementById('stage-ui').innerText = `STAGE ${this.config.currentStage}`; // 물음표 빼고 깔끔하게 텍스트만 넣기
 
         let groups = [...this.config.colorGroups].sort(() => 0.5 - Math.random());
         let mainGroup = [...groups[0]].sort(() => 0.5 - Math.random()); 
