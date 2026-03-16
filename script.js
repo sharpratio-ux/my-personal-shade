@@ -1,7 +1,13 @@
 /**
  * 마이 퍼스널 쉐이드: 자동 스테이지 & 플라워 샤워 이펙트 업데이트
  */
-
+// 👇 모바일 드래그를 위한 전역 변수 추가 👇
+let isDragging = false;
+let dragTarget = null;
+let startX = 0;
+let startY = 0;
+let draggedColor = "";
+// 👆 추가 끝 👆
 const GameEngine = {
     config: {
         currentStage: 1, // 현재 스테이지
@@ -135,45 +141,92 @@ const GameEngine = {
             const chip = document.createElement('div');
             chip.className = `color-chip ${isSmall ? 'small' : ''}`;
             chip.style.backgroundColor = color;
-            chip.draggable = true;
-            let dragIcon = null;
+            // chip.draggable = true; // 이거 지우세요! HTML5 드래그 끄기
 
-            chip.ondragstart = (e) => {
-                if(this.config.isDone) return;
-                e.dataTransfer.setData('color', color);
-                this.elements.frame.classList.add('shake-effect');
-
-                dragIcon = document.createElement('div');
-                dragIcon.style.width = isSmall ? '45px' : '55px';
-                dragIcon.style.height = isSmall ? '45px' : '55px';
-                dragIcon.style.borderRadius = '50%';
-                dragIcon.style.backgroundColor = color;
-                dragIcon.style.border = '3px solid white';
-                dragIcon.style.position = 'absolute';
-                dragIcon.style.top = '-1000px'; 
-                document.body.appendChild(dragIcon);
+            // 👇 터치 & 마우스 공용 드래그 시작 이벤트 👇
+            const handleDragStart = (e) => {
+                if (this.config.isDone) return;
                 
-                const offset = isSmall ? 22 : 27;
-                e.dataTransfer.setDragImage(dragIcon, offset, offset);
+                isDragging = true;
+                dragTarget = chip;
+                draggedColor = color; // 현재 잡은 색상 저장
+                
+                // 터치인지 마우스인지 구분해서 시작 좌표 가져오기
+                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                
+                startX = clientX;
+                startY = clientY;
+                
+                chip.style.zIndex = '1000';
+                chip.style.transition = 'none'; // 드래그 중엔 애니메이션 끄기
+                this.elements.frame.classList.add('shake-effect');
             };
-            
-            chip.ondragend = () => {
-                this.elements.frame.classList.remove('shake-effect');
-                if (dragIcon && dragIcon.parentNode) dragIcon.parentNode.removeChild(dragIcon);
-            };
+
+            // 모바일 터치와 PC 마우스 이벤트 둘 다 달아주기
+            chip.addEventListener('touchstart', handleDragStart, { passive: false });
+            chip.addEventListener('mousedown', handleDragStart);
+
             this.elements.palette.appendChild(chip);
         });
     },
 
     bindEvents() {
         const dropZone = document.getElementById('drop-zone');
-        dropZone.ondragover = e => e.preventDefault();
-        dropZone.ondrop = (e) => {
-            e.preventDefault();
-            this.elements.frame.classList.remove('shake-effect');
-            const droppedColor = e.dataTransfer.getData('color');
-            this.applyLipstickShade(droppedColor);
+        
+        // 👇 드래그 이동 중 이벤트 (화면 스크롤 방지 핵심) 👇
+        const handleDragMove = (e) => {
+            if (!isDragging || !dragTarget) return;
+            if (e.cancelable) e.preventDefault(); // 모바일 꿀렁임 완벽 차단!
+
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+            const dx = clientX - startX;
+            const dy = clientY - startY;
+            dragTarget.style.transform = `translate(${dx}px, ${dy}px) scale(1.1)`;
         };
+
+        // 👇 손을 뗐을 때 (드롭) 판정 로직 👇
+        const handleDragEnd = (e) => {
+            if (!isDragging || !dragTarget) return;
+
+            // 모바일은 changedTouches에서 마지막 좌표를 가져와야 함
+            const clientX = e.type.includes('touch') ? e.changedTouches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.changedTouches[0].clientY : e.clientY;
+
+            // 캔버스(drop-zone)의 정확한 테두리 좌표 가져오기
+            const rect = dropZone.getBoundingClientRect();
+            const isInside = (
+                clientX >= rect.left && clientX <= rect.right &&
+                clientY >= rect.top && clientY <= rect.bottom
+            );
+
+            this.elements.frame.classList.remove('shake-effect');
+
+            // 캔버스 안에 떨어졌다면 색상 적용!
+            if (isInside) {
+                this.applyLipstickShade(draggedColor);
+            }
+
+            // 칩 제자리로 원상복구
+            dragTarget.style.transform = 'translate(0, 0)';
+            dragTarget.style.zIndex = '';
+            dragTarget.style.transition = 'all 0.3s ease';
+            
+            isDragging = false;
+            dragTarget = null;
+            draggedColor = "";
+        };
+
+        // 드래그가 끊기지 않도록 '문서 전체(document)'에 이벤트를 걸어줍니다.
+        document.addEventListener('touchmove', handleDragMove, { passive: false });
+        document.addEventListener('touchend', handleDragEnd);
+        document.addEventListener('mousemove', handleDragMove);
+        document.addEventListener('mouseup', handleDragEnd);
+        // 👆 수정 끝 👆
+
+        // 리무버 버튼 기존 로직 유지
         document.getElementById('remover-btn').onclick = () => {
             this.elements.ctx.clearRect(0, 0, this.elements.canvas.width, this.elements.canvas.height);
             this.config.currentMixed = [];
