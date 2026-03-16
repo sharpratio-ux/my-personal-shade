@@ -398,14 +398,39 @@ const GameEngine = {
         this.elements.successUI.classList.add('show');
     },
 
-    // 💎 [추가] 명성치 UI 업데이트 함수
+ // 💎 [전면 개편] 칭호(Title) & 명성치 UI 업데이트 함수
     updateRPDisplay() {
         const rpEl = document.getElementById('rp-display');
+        const titleEl = document.getElementById('title-display');
+        const currentRP = this.config.rp;
+
         if (rpEl) {
-            rpEl.innerText = `💎 ${this.config.rp} RP`;
-            // 위험할 때 글자색 빨갛게 변하는 디테일
-            if(this.config.rp < 50) rpEl.style.color = "#ff4444";
+            rpEl.innerText = `💎 ${currentRP} RP`;
+            if(currentRP < 50) rpEl.style.color = "#ff4444"; // 파산 위기 경고
             else rpEl.style.color = "#ffd700";
+        }
+
+        if (titleEl) {
+            // 👑 명성치에 따른 칭호 및 디자인 로직
+            let title = "Beginner";
+            let color = "#ffffff"; // 기본 화이트
+            let glow = "0 2px 4px rgba(0,0,0,0.5)"; // 기본 그림자
+
+            if (currentRP >= 500000) { 
+                title = "Legendary Muse"; color = "#e0b0ff"; glow = "0 0 10px rgba(224,176,255,0.9)"; // 영롱한 보라빛 아우라
+            } else if (currentRP >= 100000) { 
+                title = "Icon"; color = "#e0f7fa"; glow = "0 0 8px rgba(224,247,250,0.8)"; // 다이아몬드 화이트 아우라
+            } else if (currentRP >= 20000) { 
+                title = "Master"; color = "#ffb6c1"; glow = "0 0 6px rgba(255,182,193,0.6)"; // 로즈골드 아우라
+            } else if (currentRP >= 5000) { 
+                title = "Pro Artist"; color = "#e8e8e8"; glow = "0 0 5px rgba(255,255,255,0.5)"; // 실버 광택
+            } else if (currentRP >= 1000) { 
+                title = "Colorist"; color = "#ffc0cb"; glow = "0 2px 4px rgba(0,0,0,0.5)"; // 은은한 핑크
+            }
+
+            titleEl.innerText = title;
+            titleEl.style.color = color;
+            titleEl.style.textShadow = glow;
         }
     }
 };
