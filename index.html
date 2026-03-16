@@ -161,16 +161,32 @@
         }
 
         /* 👇 새롭게 추가하는 명성치 UI 스타일 👇 */
-        .rp-text {
+        /* 👇 칭호와 명성치를 묶어주는 우측 상단 박스 👇 */
+        .status-box {
             position: absolute;
             top: 25px;
             right: 25px;
+            text-align: right;
+            z-index: 20;
+        }
+        /* 👑 우아한 필기체 칭호 스타일 */
+        .title-text {
+            font-family: 'Georgia', serif; /* 고급스러운 명조/필기체 느낌 */
+            font-size: 15px;
+            font-style: italic;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            transition: all 0.5s ease; /* 등급 오를 때 부드럽게 색상 변경 */
+        }
+        /* 💎 명성치 스타일 */
+        .rp-text {
             color: #ffd700;
             font-size: 18px;
             font-weight: 800;
             letter-spacing: 1px;
             text-shadow: 0 2px 5px rgba(0,0,0,0.6);
-            z-index: 20;
             transition: color 0.3s;
         }
 
@@ -297,7 +313,10 @@
             STAGE 1 <span id="help-btn" style="cursor:pointer; margin-left:8px; font-size:16px; opacity:0.6;">?</span>
         </div>
         
-        <div id="rp-display" class="rp-text">💎 100 RP</div>
+        <div class="status-box">
+            <div id="title-display" class="title-text">Beginner</div>
+            <div id="rp-display" class="rp-text">💎 100 RP</div>
+        </div>
         
         <div id="flower-container"></div>   
         
