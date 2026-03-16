@@ -1,5 +1,5 @@
 /**
- * 마이 퍼스널 쉐이드: 자동 스테이지 & 플라워 샤워 이펙트 업데이트
+ * 마이 퍼스널 쉐이드: 자동 스테이지 & 플라워 샤워 & 명성(RP) 시스템 업데이트
  */
 // 👇 모바일 드래그를 위한 전역 변수 추가 👇
 let isDragging = false;
@@ -8,6 +8,7 @@ let startX = 0;
 let startY = 0;
 let draggedColor = "";
 // 👆 추가 끝 👆
+
 const GameEngine = {
     config: {
         currentStage: 1, // 현재 스테이지
@@ -16,18 +17,21 @@ const GameEngine = {
         traps: [],
         currentMixed: [],
         isDone: false,
-        mistakes: 0,
-        maxMistakes: 3,
         requiredCount: 2,
         
-        // 🌸 뷰티 컬러 풀 (절대 똥색이 안 나오는 화장품 전용 예쁜 색상들 모음)
-      // 🌸 뷰티 컬러 풀 (하늘 아래 같은 핑크는 없다! 그룹당 8개의 미세 톤 차이)
+        // 💎 [추가] 명성 시스템 변수 세팅
+        rp: 100,              // 초기 시드머니 100 RP
+        combo: 0,             // 연속 정답 콤보
+        currentStageFails: 0, // 현재 스테이지 오답 횟수 (누진세용)
+
+        // 🌸 뷰티 컬러 풀
         colorGroups: [
-            ["#FFE4E1", "#FFB6C1", "#FFC0CB", "#FF69B4", "#FF1493", "#DB7093", "#C71585", "#F8BBD0"], // 1. 핑크 계열 (라이트~딥)
-            ["#FFA07A", "#FA8072", "#E9967A", "#F08080", "#CD5C5C", "#FF7F50", "#FF6347", "#FF8C00"], // 2. 코랄/살몬 계열
-            ["#DC143C", "#FF0000", "#B22222", "#8B0000", "#990000", "#A52A2A", "#CC0000", "#800000"], // 3. 레드 계열
-            ["#E6E6FA", "#DDA0DD", "#DA70D6", "#BA55D3", "#9370DB", "#8A2BE2", "#9400D3", "#800080"]  // 4. 퍼플/플럼 계열
-        ]    },
+            ["#FFE4E1", "#FFB6C1", "#FFC0CB", "#FF69B4", "#FF1493", "#DB7093", "#C71585", "#F8BBD0"],
+            ["#FFA07A", "#FA8072", "#E9967A", "#F08080", "#CD5C5C", "#FF7F50", "#FF6347", "#FF8C00"],
+            ["#DC143C", "#FF0000", "#B22222", "#8B0000", "#990000", "#A52A2A", "#CC0000", "#800000"],
+            ["#E6E6FA", "#DDA0DD", "#DA70D6", "#BA55D3", "#9370DB", "#8A2BE2", "#9400D3", "#800080"]
+        ]
+    },
 
     elements: {
         canvas: document.getElementById('lip-canvas'),
@@ -41,7 +45,7 @@ const GameEngine = {
     init() {
         this.resize();
         this.bindEvents();
-        this.generateStage(); // 게임 시작 시 1스테이지 자동 생성
+        this.generateStage();
         window.addEventListener('resize', () => this.resize());
     },
 
@@ -50,67 +54,68 @@ const GameEngine = {
         this.elements.canvas.height = this.elements.canvas.parentElement.offsetHeight;
     },
 
-    // 🌸 무한 스테이지 생성 알고리즘
-    // 🌸 지능형 스테이지 생성 알고리즘
-    // 🌸 기획자님표 4단계 난이도 밸런스 알고리즘
     generateStage() {
         let reqCount = 2;
         let trapCount = 2;
 
-        // 🎯 난이도별 칩 개수 세팅
         if (this.config.currentStage <= 10) {
-            reqCount = 2; trapCount = 2; // Level 1 (총 4개)
+            reqCount = 2; trapCount = 2; 
         } else if (this.config.currentStage <= 20) {
-            reqCount = 2; trapCount = 4; // Level 2 (총 6개)
+            reqCount = 2; trapCount = 4; 
         } else if (this.config.currentStage <= 30) {
-            reqCount = 3; trapCount = 3; // Level 3 (총 6개)
+            reqCount = 3; trapCount = 3; 
         } else {
-            reqCount = 3; trapCount = 5; // Level 4 (총 8개 - 하드코어)
+            reqCount = 3; trapCount = 5; 
         }
 
         this.config.requiredCount = reqCount;
         this.config.currentMixed = [];
-        this.config.mistakes = 0;
         this.config.isDone = false;
+        
+        // 💎 [추가] 새 스테이지 진입 시 오답 스택(누진세) 초기화
+        this.config.currentStageFails = 0;
+        this.updateRPDisplay(); // 명성치 UI 갱신
 
         document.getElementById('req-count-text').innerText = `${reqCount} colors`;
-        document.getElementById('stage-ui').innerText = `STAGE ${this.config.currentStage}`;
+        document.getElementById('stage-ui').innerHTML = `STAGE ${this.config.currentStage} <span id="help-btn" style="cursor:pointer; margin-left:8px; font-size:16px; opacity:0.6;">?</span>`;
 
-        // 🎨 난이도에 따른 '지능형 색상 추출'
+        // 기존 이벤트 리스너 다시 달아주기 (innerHTML로 덮어씌워서 헬프 버튼 기능 잃지 않도록)
+        setTimeout(() => {
+            const helpBtn = document.getElementById('help-btn');
+            if (helpBtn) {
+                helpBtn.onclick = () => {
+                    const tutorialScreen = document.getElementById('tutorial-screen');
+                    tutorialScreen.style.display = 'flex';
+                    setTimeout(() => { tutorialScreen.style.opacity = '1'; }, 50);
+                };
+            }
+        }, 100);
+
         let groups = [...this.config.colorGroups].sort(() => 0.5 - Math.random());
-        let mainGroup = [...groups[0]].sort(() => 0.5 - Math.random()); // 타겟 색상이 될 메인 그룹
+        let mainGroup = [...groups[0]].sort(() => 0.5 - Math.random()); 
 
         if (this.config.currentStage <= 10) {
-            // 🥉 Level 1 (1~10): 정답과 확연히 다른 함정! (튜토리얼)
             this.config.answers = mainGroup.slice(0, reqCount);
             let trap1 = [...groups[1]].sort(() => 0.5 - Math.random())[0];
             let trap2 = [...groups[2]].sort(() => 0.5 - Math.random())[0];
             this.config.traps = [trap1, trap2];
-
         } else if (this.config.currentStage <= 20) {
-            // 🥈 Level 2 (11~20): 얼추 비슷한 톤 등장! (시각적 혼란)
             this.config.answers = mainGroup.slice(0, reqCount);
             let remainingMain = mainGroup.filter(c => !this.config.answers.includes(c));
-            let similarTraps = remainingMain.slice(0, 3); // 헷갈리는 같은 톤 3개
-            let differentTrap = [...groups[1]].sort(() => 0.5 - Math.random()).slice(0, 1); // 뜬금없는 톤 1개
+            let similarTraps = remainingMain.slice(0, 3);
+            let differentTrap = [...groups[1]].sort(() => 0.5 - Math.random()).slice(0, 1);
             this.config.traps = [...similarTraps, ...differentTrap];
-
         } else if (this.config.currentStage <= 30) {
-            // 🥇 Level 3 (21~30): 3개 섞기 시작! (조색 장인)
             this.config.answers = mainGroup.slice(0, reqCount);
             let remainingMain = mainGroup.filter(c => !this.config.answers.includes(c));
             let similarTraps = remainingMain.slice(0, 2);
             let differentTrap = [...groups[1]].sort(() => 0.5 - Math.random()).slice(0, 1);
             this.config.traps = [...similarTraps, ...differentTrap];
-
         } else {
-            // 💎 Level 4 (31~): 미세한 명도/채도 차이만 나는 8개 칩 등장! (절대 색감)
             this.config.answers = mainGroup.slice(0, reqCount);
-            // 모든 함정(5개)을 타겟과 똑같은 계열(mainGroup)에서만 뽑음
             this.config.traps = mainGroup.slice(reqCount, reqCount + trapCount); 
         }
 
-        // 정답 색상들을 미리 섞어서 타겟 색상 완성
         this.config.target = this.mixMultipleColors(this.config.answers);
         document.getElementById('target-view').style.backgroundColor = this.config.target;
         
@@ -122,7 +127,6 @@ const GameEngine = {
     setupPalette() {
         let colors = [...this.config.answers, ...this.config.traps];
         
-        // 👇 [핵심] 카드를 완벽하게 섞는 전문 알고리즘(Fisher-Yates) 도입! 👇
         for (let i = colors.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [colors[i], colors[j]] = [colors[j], colors[i]];
@@ -141,17 +145,13 @@ const GameEngine = {
             const chip = document.createElement('div');
             chip.className = `color-chip ${isSmall ? 'small' : ''}`;
             chip.style.backgroundColor = color;
-            // chip.draggable = true; // 이거 지우세요! HTML5 드래그 끄기
 
-            // 👇 터치 & 마우스 공용 드래그 시작 이벤트 👇
             const handleDragStart = (e) => {
                 if (this.config.isDone) return;
-                
                 isDragging = true;
                 dragTarget = chip;
-                draggedColor = color; // 현재 잡은 색상 저장
+                draggedColor = color; 
                 
-                // 터치인지 마우스인지 구분해서 시작 좌표 가져오기
                 const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
                 const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
                 
@@ -159,11 +159,10 @@ const GameEngine = {
                 startY = clientY;
                 
                 chip.style.zIndex = '1000';
-                chip.style.transition = 'none'; // 드래그 중엔 애니메이션 끄기
+                chip.style.transition = 'none';
                 this.elements.frame.classList.add('shake-effect');
             };
 
-            // 모바일 터치와 PC 마우스 이벤트 둘 다 달아주기
             chip.addEventListener('touchstart', handleDragStart, { passive: false });
             chip.addEventListener('mousedown', handleDragStart);
 
@@ -174,10 +173,9 @@ const GameEngine = {
     bindEvents() {
         const dropZone = document.getElementById('drop-zone');
         
-        // 👇 드래그 이동 중 이벤트 (화면 스크롤 방지 핵심) 👇
         const handleDragMove = (e) => {
             if (!isDragging || !dragTarget) return;
-            if (e.cancelable) e.preventDefault(); // 모바일 꿀렁임 완벽 차단!
+            if (e.cancelable) e.preventDefault();
 
             const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
             const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
@@ -187,15 +185,12 @@ const GameEngine = {
             dragTarget.style.transform = `translate(${dx}px, ${dy}px) scale(1.1)`;
         };
 
-        // 👇 손을 뗐을 때 (드롭) 판정 로직 👇
         const handleDragEnd = (e) => {
             if (!isDragging || !dragTarget) return;
 
-            // 모바일은 changedTouches에서 마지막 좌표를 가져와야 함
             const clientX = e.type.includes('touch') ? e.changedTouches[0].clientX : e.clientX;
             const clientY = e.type.includes('touch') ? e.changedTouches[0].clientY : e.clientY;
 
-            // 캔버스(drop-zone)의 정확한 테두리 좌표 가져오기
             const rect = dropZone.getBoundingClientRect();
             const isInside = (
                 clientX >= rect.left && clientX <= rect.right &&
@@ -204,12 +199,10 @@ const GameEngine = {
 
             this.elements.frame.classList.remove('shake-effect');
 
-            // 캔버스 안에 떨어졌다면 색상 적용!
             if (isInside) {
                 this.applyLipstickShade(draggedColor);
             }
 
-            // 칩 제자리로 원상복구
             dragTarget.style.transform = 'translate(0, 0)';
             dragTarget.style.zIndex = '';
             dragTarget.style.transition = 'all 0.3s ease';
@@ -219,21 +212,17 @@ const GameEngine = {
             draggedColor = "";
         };
 
-        // 드래그가 끊기지 않도록 '문서 전체(document)'에 이벤트를 걸어줍니다.
         document.addEventListener('touchmove', handleDragMove, { passive: false });
         document.addEventListener('touchend', handleDragEnd);
         document.addEventListener('mousemove', handleDragMove);
         document.addEventListener('mouseup', handleDragEnd);
-        // 👆 수정 끝 👆
 
-        // 리무버 버튼 기존 로직 유지
         document.getElementById('remover-btn').onclick = () => {
             this.elements.ctx.clearRect(0, 0, this.elements.canvas.width, this.elements.canvas.height);
             this.config.currentMixed = [];
         };
     },
 
-    // 여러 색상을 한 번에 섞는 만능 믹서기
     mixMultipleColors(colorArray) {
         let r = 0, g = 0, b = 0;
         colorArray.forEach(hex => {
@@ -250,13 +239,11 @@ const GameEngine = {
     applyLipstickShade(color) {
         if (this.config.isDone || !color) return;
         
-        // 👇 [효과음 추가] 준비하신 샤랄라 소리 재생!
         const audio = new Audio('music/Twinkle.mp3'); 
-        audio.volume = 0.4; // 소리가 너무 크지 않게 적절히 조절
+        audio.volume = 0.4; 
         audio.play();
 
         this.config.currentMixed.push(color);
-        
         let finalColor = color; 
         
         if (this.config.currentMixed.length === this.config.requiredCount) {
@@ -315,18 +302,29 @@ const GameEngine = {
         if(navigator.vibrate) navigator.vibrate(10);
     },
 
-checkMatch() {
+    checkMatch() {
         const hasAllAnswers = this.config.answers.every(a => this.config.currentMixed.includes(a));
         
         if (hasAllAnswers) {
             this.config.isDone = true;
 
-            // 🌸 [추가] 스테이지 성공 효과음 재생
+            // 💎 [추가] 기획자님표 명성 획득 수식 적용!
+            const isPerfect = (this.config.currentStageFails === 0);
+            const stageReward = this.config.currentStage * 20;
+            const perfectBonus = isPerfect ? 100 : 0;
+            const comboBonus = this.config.combo * 50;
+            
+            const earnedRP = stageReward + perfectBonus + comboBonus;
+            this.config.rp += earnedRP; 
+            this.config.combo++; // 콤보 증가
+            
             const successAudio = new Audio('music/Success.mp3');
-            successAudio.volume = 0.3; // 너무 크지 않게 조절
+            successAudio.volume = 0.3;
             successAudio.play();
 
-            this.showOverlay("PERFECT SHADE", "Color development complete");
+            // 얼마 벌었는지 자랑하기
+            this.showOverlay("PERFECT SHADE", `+${earnedRP} RP 획득! (현재 ${this.config.rp} RP)`);
+            this.updateRPDisplay();
             this.triggerFlowerShower(); 
             
             setTimeout(() => {
@@ -339,44 +337,57 @@ checkMatch() {
         }
     },
 
-    // 🌸 벚꽃 잎 날리기 애니메이션 생성
     triggerFlowerShower() {
         this.elements.flowerContainer.innerHTML = '';
-        // 40개의 예쁜 꽃잎을 랜덤한 위치에서 떨어뜨립니다.
         for (let i = 0; i < 40; i++) {
             const petal = document.createElement('div');
             petal.className = 'petal';
             petal.style.left = Math.random() * 100 + '%';
             petal.style.top = '-20px';
-            // 떨어지는 속도와 시작 시간을 다르게 해서 진짜 꽃비처럼 연출
             petal.style.animationDuration = (Math.random() * 2 + 2) + 's'; 
             petal.style.animationDelay = (Math.random() * 0.5) + 's';
-            // 크기도 조금씩 다르게
             const scale = Math.random() * 0.5 + 0.6;
             petal.style.transform = `scale(${scale})`;
-            
             this.elements.flowerContainer.appendChild(petal);
         }
     },
 
+    // 💎 [전면 개편] 오답 시 누진세 페널티 및 파산 체크 로직
     handleWrongAnswer() {
-        this.config.mistakes++;
-        if (this.config.mistakes >= this.config.maxMistakes) {
-            this.showOverlay("GAME OVER", "Try again from STAGE 1");
+        this.config.currentStageFails++; // 이번 판 실수 카운트 1증가
+        this.config.combo = 0; // 뼈아픈 콤보 리셋
+
+        // 기획자님표 누진세 페널티
+        let penalty = 0;
+        if (this.config.currentStageFails === 1) {
+            penalty = 10;
+        } else {
+            penalty = (this.config.currentStageFails - 1) * 50;
+        }
+
+        this.config.rp -= penalty; // 명성 차감
+        this.updateRPDisplay();
+
+        // 파산 체크 (0 미만이 되면 즉시 게임오버!)
+        if (this.config.rp < 0) {
+            this.showOverlay("BANKRUPT", "명성을 모두 잃었습니다.<br>처음부터 다시 시작합니다.");
             this.config.isDone = true;
             setTimeout(() => {
-                this.config.currentStage = 1; // 실패하면 1탄으로 강등!
+                this.config.currentStage = 1; // 1스테이지로 강등
+                this.config.rp = 100;         // 초기 자본 100 복구
+                this.config.combo = 0;
                 this.generateStage();
-            }, 2500);
+            }, 3000);
         } else {
-            this.showOverlay("WRONG MIX", "Check the colors again!");
+            // 아직 파산 안 했으면 페널티 경고
+            this.showOverlay("WRONG MIX", `페널티 -${penalty} RP<br>남은 명성: ${this.config.rp} RP`);
             setTimeout(() => {
                 if(!this.config.isDone) {
                     this.elements.successUI.classList.remove('show');
                     this.elements.ctx.clearRect(0, 0, this.elements.canvas.width, this.elements.canvas.height);
                     this.config.currentMixed = [];
                 }
-            }, 1200);
+            }, 1800);
         }
         if(navigator.vibrate) navigator.vibrate([50, 30, 50]);
     },
@@ -385,21 +396,29 @@ checkMatch() {
         const textEl = this.elements.successUI.querySelector('.success-text');
         textEl.innerHTML = `<span style="letter-spacing:2px; font-weight:400;">${title}</span><br><span style="font-size:14px; font-weight:300; opacity:0.8;">${sub}</span>`;
         this.elements.successUI.classList.add('show');
+    },
+
+    // 💎 [추가] 명성치 UI 업데이트 함수
+    updateRPDisplay() {
+        const rpEl = document.getElementById('rp-display');
+        if (rpEl) {
+            rpEl.innerText = `💎 ${this.config.rp} RP`;
+            // 위험할 때 글자색 빨갛게 변하는 디테일
+            if(this.config.rp < 50) rpEl.style.color = "#ff4444";
+            else rpEl.style.color = "#ffd700";
+        }
     }
 };
 
 window.onload = () => {
     GameEngine.init(); 
 
-    // 🎵 1. BGM 객체 생성 및 무한 반복 설정
     const bgm = new Audio('music/bgm.mp3');
-    bgm.loop = true;   // 끝내지 않고 계속 반복
-    bgm.volume = 0.25; // 고급 샵처럼 아주 은은하게 (0.12 권장)
+    bgm.loop = true;   
+    bgm.volume = 0.25; 
 
-    // 🔊 브라우저 정책 해결: 화면 어디든 첫 클릭 시 BGM 재생 시작
     const startBGM = () => {
-        bgm.play().catch(e => {}); // 에러 방지용
-        // 한 번 재생되면 이벤트 리스너 제거 (중복 실행 방지)
+        bgm.play().catch(e => {}); 
         document.removeEventListener('click', startBGM);
         document.removeEventListener('touchstart', startBGM);
     };
@@ -409,7 +428,6 @@ window.onload = () => {
     const titleScreen = document.getElementById('title-screen');
     const tutorialScreen = document.getElementById('tutorial-screen');
 
-    // 🌸 2. 타이틀 반짝이 생성 (기존 유지)
     if (titleScreen) {
         for (let i = 0; i < 40; i++) { 
             const sparkle = document.createElement('div');
@@ -425,9 +443,8 @@ window.onload = () => {
         }
     }
 
-    // 🌸 3. START 버튼 클릭 (BGM은 이미 나오고 있으므로 화면 전환만)
     document.getElementById('start-btn').onclick = () => {
-        new Audio('music/Twinkle.mp3').play(); // 클릭 효과음은 별도 재생
+        new Audio('music/Twinkle.mp3').play(); 
         
         tutorialScreen.style.display = 'flex'; 
         setTimeout(() => { 
@@ -439,7 +456,6 @@ window.onload = () => {
         }, 600);
     };
 
-    // 📖 4. 튜토리얼 GO! 버튼 클릭
     document.getElementById('close-tutorial').onclick = () => {
         new Audio('music/Twinkle.mp3').play();
         tutorialScreen.style.opacity = '0';
@@ -448,7 +464,6 @@ window.onload = () => {
         }, 500);
     };
 
-    // ❓ 5. 물음표(?) 아이콘 클릭
     const helpBtn = document.getElementById('help-btn');
     if (helpBtn) {
         helpBtn.onclick = () => {
