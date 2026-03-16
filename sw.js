@@ -1,5 +1,5 @@
 // 🌟 파일이 수정될 때마다 이 숫자를 v2 -> v3 -> v4로 올려주세요!
-const CACHE_NAME = 'myshade-v5'; 
+const CACHE_NAME = 'myshade-v6'; 
 
 const ASSETS = [
   './',
