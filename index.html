@@ -8,11 +8,23 @@
     <meta name="theme-color" content="#ff69b4">
     <meta name="mobile-web-app-capable" content="yes">
     <script>
+      <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('PWA 등록 성공:', reg.scope))
-            .catch(err => console.error('PWA 등록 실패:', err));
+          navigator.serviceWorker.register('./sw.js').then(reg => {
+            console.log('PWA 엔진 가동 완료');
+            
+            // 👇 새로운 업데이트가 발견되면 자동으로 새로고침 시키는 로직 👇
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('새로운 버전이 감지되었습니다. 업데이트를 진행합니다!');
+                  window.location.reload(); // 화면 강제 새로고침 (최신화)
+                }
+              });
+            });
+          }).catch(err => console.error('PWA 엔진 에러:', err));
         });
       }
     </script>
@@ -290,6 +302,6 @@
         <div class="palette-ui" id="palette"></div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=2"></script>
 </body>
 </html>
