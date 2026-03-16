@@ -6,9 +6,8 @@
     <title>My Personal Shade: HD Pro Edition</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ff69b4">
-    <meta name="mobile-web-app-capable" content="yes">
+   <meta name="mobile-web-app-capable" content="yes">
     <script>
-      <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js').then(reg => {
@@ -148,6 +147,7 @@
 /* ... 기타 코드 ... */
 
         /* 🌸 스테이지 UI 텍스트 */
+      /* 🌸 스테이지 UI 텍스트 */
         .stage-text {
             position: absolute;
             top: 25px;
@@ -158,6 +158,20 @@
             letter-spacing: 1px;
             text-shadow: 0 2px 5px rgba(0,0,0,0.4);
             z-index: 20;
+        }
+
+        /* 👇 새롭게 추가하는 명성치 UI 스타일 👇 */
+        .rp-text {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            color: #ffd700;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.6);
+            z-index: 20;
+            transition: color 0.3s;
         }
 
         .header-ui { padding: 55px 25px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
@@ -283,8 +297,10 @@
             STAGE 1 <span id="help-btn" style="cursor:pointer; margin-left:8px; font-size:16px; opacity:0.6;">?</span>
         </div>
         
-        <div id="flower-container"></div>
-
+        <div id="rp-display" class="rp-text">💎 100 RP</div>
+        
+        <div id="flower-container"></div>   
+        
         <div class="header-ui">
             <div class="target-box">
                 <div id="target-view" class="target-circle"></div>
