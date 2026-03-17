@@ -87,6 +87,10 @@ generateStage() {
         
         // 💎 새 스테이지 진입 시 오답 스택(누진세) 초기화
         this.config.currentStageFails = 0;
+    // 💡 힌트 초기화 및 버튼 다시 살리기
+        this.config.hintsUsed = 0;
+        const hintBtn = document.getElementById('hint-btn');
+        if (hintBtn) hintBtn.style.display = 'block';
         this.updateRPDisplay(); // 명성치 UI 갱신
 
         // UI 업데이트 (물음표 뺀 깔끔한 텍스트)
@@ -171,7 +175,8 @@ generateStage() {
             const chip = document.createElement('div');
             chip.className = `color-chip ${isSmall ? 'small' : ''}`;
             chip.style.backgroundColor = color;
-
+// 💡 힌트 기능에서 정답을 찾기 위해 색상값 기록해두기
+            chip.dataset.color = color;
             const handleDragStart = (e) => {
                 if (this.config.isDone) return;
                 isDragging = true;
@@ -247,6 +252,31 @@ generateStage() {
             this.elements.ctx.clearRect(0, 0, this.elements.canvas.width, this.elements.canvas.height);
             this.config.currentMixed = [];
         };
+        // 💡 힌트 버튼 클릭 이벤트
+        const hintBtn = document.getElementById('hint-btn');
+        if (hintBtn) {
+            hintBtn.onclick = () => {
+                if (this.config.isDone) return; 
+                
+                if (this.config.hintsUsed < this.config.requiredCount) {
+                    const answerColor = this.config.answers[this.config.hintsUsed];
+                    
+                    const chips = document.querySelectorAll('.color-chip');
+                    chips.forEach(chip => {
+                        if (chip.dataset.color === answerColor) {
+                            chip.classList.add('chip-glow');
+                        }
+                    });
+
+                    new Audio('music/Twinkle.mp3').play(); 
+                    this.config.hintsUsed++; 
+                }
+
+                if (this.config.hintsUsed >= this.config.requiredCount) {
+                    hintBtn.style.display = 'none';
+                }
+            };
+        }
     },
 
     mixMultipleColors(colorArray) {
