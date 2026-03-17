@@ -264,7 +264,8 @@ generateStage() {
 
     applyLipstickShade(color) {
         if (this.config.isDone || !color) return;
-        
+        // 🛡️ [추가] 중복 터치 버그 방어막: 이미 요구된 개수가 다 찼으면 함수 중단!
+        if (this.config.currentMixed.length >= this.config.requiredCount) return;
         const audio = new Audio('music/Twinkle.mp3'); 
         audio.volume = 0.4; 
         audio.play();
