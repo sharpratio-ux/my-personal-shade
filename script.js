@@ -7,7 +7,9 @@ let dragTarget = null;
 let startX = 0;
 let startY = 0;
 let draggedColor = "";
+let hasMoved = false; // 👈 [추가] 톡 치는 건지, 끌고 가는 건지 구분하는 판독기!
 // 👆 추가 끝 👆
+
 
 const GameEngine = {
     config: {
@@ -196,6 +198,7 @@ generateStage() {
                 
                 startX = clientX;
                 startY = clientY;
+                hasMoved = false; // 👈 [추가] 터치 시작할 때는 무조건 false로 리셋!
                 
                 chip.style.zIndex = '1000';
                 chip.style.transition = 'none';
@@ -221,16 +224,21 @@ generateStage() {
 
             const dx = clientX - startX;
             const dy = clientY - startY;
+            
+            // 💡 [추가] 10px 이상 움직여야 '진짜 드래그'로 인정! (제자리 탭 방지)
+            if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                hasMoved = true;
+            }
+
             dragTarget.style.transform = `translate(${dx}px, ${dy}px) scale(1.1)`;
         };
-
         const handleDragEnd = (e) => {
             if (!isDragging || !dragTarget) return;
 
             const clientX = e.type.includes('touch') ? e.changedTouches[0].clientX : e.clientX;
             const clientY = e.type.includes('touch') ? e.changedTouches[0].clientY : e.clientY;
 
-            const rect = dropZone.getBoundingClientRect();
+           const rect = dropZone.getBoundingClientRect();
             const isInside = (
                 clientX >= rect.left && clientX <= rect.right &&
                 clientY >= rect.top && clientY <= rect.bottom
@@ -238,7 +246,8 @@ generateStage() {
 
             this.elements.frame.classList.remove('shake-effect');
 
-            if (isInside) {
+            // 💡 [핵심 수정] 드롭존 안쪽이고 && 실제로 손가락을 끌었을 때만 색상 투입!
+            if (isInside && hasMoved) {
                 this.applyLipstickShade(draggedColor);
             }
 
