@@ -6,20 +6,19 @@
     <title>My Personal Shade: HD Pro Edition</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ff69b4">
-   <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js').then(reg => {
             console.log('PWA 엔진 가동 완료');
             
-            // 👇 새로운 업데이트가 발견되면 자동으로 새로고침 시키는 로직 👇
             reg.addEventListener('updatefound', () => {
               const newWorker = reg.installing;
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                   console.log('새로운 버전이 감지되었습니다. 업데이트를 진행합니다!');
-                  window.location.reload(); // 화면 강제 새로고침 (최신화)
+                  window.location.reload(); 
                 }
               });
             });
@@ -30,43 +29,42 @@
     <style>
         body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #fce4ec; font-family: sans-serif; overflow: hidden; }
  
-/* 🌸 타이틀 화면 전체 덮기 🌸 */
+        /* 🌸 타이틀 화면 전체 덮기 🌸 */
         .title-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: url('assets/title.jpg') no-repeat center center; /* 올려주신 이미지 */
+            background: url('assets/title.jpg') no-repeat center center; 
             background-size: cover;
-            z-index: 200; /* 게임 화면보다 무조건 위에 오도록 */
+            z-index: 200; 
             display: flex;
             flex-direction: column;
-            justify-content: flex-end; /* 버튼을 이미지 아래쪽으로 밀어냄 */
+            justify-content: flex-end; 
             align-items: center;
-            padding-bottom: 100px; /* 바닥에서 살짝 띄움 */
-            transition: opacity 0.8s ease, visibility 0.8s ease; /* 사르르 사라지는 효과 */
-            border-radius: 30px; /* 폰 테두리에 맞게 둥글게 */
+            padding-bottom: 100px; 
+            transition: opacity 0.8s ease, visibility 0.8s ease; 
+            border-radius: 30px; 
         }
 
         .title-overlay.hide { opacity: 0; visibility: hidden; }
-/* 👇 여기서부터 복사해서 붙여넣으세요 👇 */
+        
         /* ✨ 타이틀 전용 반짝이 입자 */
-        /* ✨ 훨씬 더 잘 보이는 영롱한 반짝이 입자 */
         .title-sparkle {
             position: absolute;
-            background: radial-gradient(circle, #fff 10%, rgba(255,255,255,0) 70%); /* 중심은 밝고 외곽은 퍼지는 빛 */
+            background: radial-gradient(circle, #fff 10%, rgba(255,255,255,0) 70%); 
             border-radius: 50%;
             pointer-events: none;
-            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8); /* 빛 번짐 효과 추가 */
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8); 
             animation: sparkle-float linear infinite;
             z-index: 205;
         }
 
         @keyframes sparkle-float {
             0% { transform: translateY(0) scale(0); opacity: 0; }
-            20% { opacity: 1; } /* 빠르게 나타남 */
+            20% { opacity: 1; } 
             80% { opacity: 0.8; }
-            100% { transform: translateY(-150px) scale(1.2); opacity: 0; } /* 더 높이 올라감 */
+            100% { transform: translateY(-150px) scale(1.2); opacity: 0; } 
         }
-        /* 👆 여기까지 복사 끝 👆 */
+        
         /* 💎 고급스러운 유리 질감 START 버튼 🌸 */
         .start-button-3d {
             position: relative;
@@ -86,7 +84,6 @@
             font-weight: 400;
             letter-spacing: 3px;
             
-            /* 유리 질감 (반투명 + 블러) */
             background: rgba(255, 255, 255, 0.25); 
             backdrop-filter: blur(10px); 
             -webkit-backdrop-filter: blur(10px);
@@ -94,15 +91,14 @@
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.5);
             box-shadow: 
-                0 8px 32px rgba(255, 105, 180, 0.3), /* 은은한 핑크빛 그림자 */
-                inset 0 0 15px rgba(255, 255, 255, 0.3); /* 버튼 안쪽 반짝임 */
+                0 8px 32px rgba(255, 105, 180, 0.3), 
+                inset 0 0 15px rgba(255, 255, 255, 0.3); 
                 
-            transform: translateY(-6px); /* 살짝 떠 있는 입체감 */
+            transform: translateY(-6px); 
             transition: all 0.2s cubic-bezier(.3, .7, .4, 1);
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        /* 클릭 시 '진짜' 눌리는 느낌 */
         .start-button-3d:active .button-front {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(255, 105, 180, 0.2);
@@ -117,37 +113,22 @@
             100% { transform: translate(0.2px, 0.2px); }
         }
 
-        /* ... 기타 코드 ... */
-.phone-container {
-    /* 👇 양 옆과 위아래에 세련된 공간(여백)을 추가합니다 (위아래 3vh, 좌우 자동) 👇 */
-    margin: 3vh auto; 
-    
-    /* 화면 크기에 맞춰 스마트폰 프레임 높이를 최적화 (여백 고려) */
-    height: calc(100vh - 6vh); 
-    
-    aspect-ratio: 1080 / 1920; 
-    background: url('assets/basic.jpg') no-repeat center center;
-    background-size: cover;
-    
-    /* 👇 1. 검은색 테두리(#1a1a1a)를 고급스러운 매트 그레이(#d1d1d1)로 변경 👇 */
-    /* 👇 2. 테두리 두께를 살짝 얇게(8px) 하여 세련미 추가 👇 */
-    border: 8px solid #d1d1d1;  
-    
-    border-radius: 40px; 
-    
-    /* 그림자를 살짝 더 부드럽게 보정 */
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
-    
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-}
-/* ... 기타 코드 ... */
+        .phone-container {
+            margin: 3vh auto; 
+            height: calc(100vh - 6vh); 
+            aspect-ratio: 1080 / 1920; 
+            background: url('assets/basic.jpg') no-repeat center center;
+            background-size: cover;
+            border: 8px solid #d1d1d1;  
+            border-radius: 40px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
 
-        /* 🌸 스테이지 UI 텍스트 */
-      /* 🌸 스테이지 UI 텍스트 */
         .stage-text {
             position: absolute;
             top: 25px;
@@ -160,8 +141,6 @@
             z-index: 20;
         }
 
-        /* 👇 새롭게 추가하는 명성치 UI 스타일 👇 */
-        /* 👇 칭호와 명성치를 묶어주는 우측 상단 박스 👇 */
         .status-box {
             position: absolute;
             top: 25px;
@@ -169,18 +148,16 @@
             text-align: right;
             z-index: 20;
         }
-        /* 👑 우아한 필기체 칭호 스타일 */
         .title-text {
-            font-family: 'Georgia', serif; /* 고급스러운 명조/필기체 느낌 */
+            font-family: 'Georgia', serif; 
             font-size: 15px;
             font-style: italic;
             font-weight: 600;
             letter-spacing: 1px;
             margin-bottom: 4px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            transition: all 0.5s ease; /* 등급 오를 때 부드럽게 색상 변경 */
+            transition: all 0.5s ease; 
         }
-        /* 💎 명성치 스타일 */
         .rp-text {
             color: #ffd700;
             font-size: 18px;
@@ -200,26 +177,24 @@
         
         .palette-ui { min-height: 90px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(15px); display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; border-top: 1px solid rgba(255,255,255,0.3); padding: 10px 20px; position: absolute; bottom: 0; width: 100%; box-sizing: border-box; }
         .color-chip { 
-    width: 55px; 
-    height: 55px; 
-    border-radius: 50%; 
-    border: 3px solid white; 
-    box-shadow: 0 6px 15px rgba(0,0,0,0.15); 
-    cursor: grab; 
-    transition: all 0.2s ease; 
-    -webkit-tap-highlight-color: transparent; 
-    outline: none; 
-    user-select: none; 
-
-    /* 👇 모바일 드래그 에러를 막기 위해 추가된 2줄 👇 */
-    touch-action: none; 
-    -webkit-user-drag: none; 
-}
-.color-chip.small { 
-    width: 45px; 
-    height: 45px; 
-}
-       .palette-ui.left-align { justify-content: flex-start; padding-left: 25px; }
+            width: 55px; 
+            height: 55px; 
+            border-radius: 50%; 
+            border: 3px solid white; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15); 
+            cursor: grab; 
+            transition: all 0.2s ease; 
+            -webkit-tap-highlight-color: transparent; 
+            outline: none; 
+            user-select: none; 
+            touch-action: none; 
+            -webkit-user-drag: none; 
+        }
+        .color-chip.small { 
+            width: 45px; 
+            height: 45px; 
+        }
+        .palette-ui.left-align { justify-content: flex-start; padding-left: 25px; }
         
         .success-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: transparent; opacity: 0; pointer-events: none; transition: 0.6s; z-index: 100; }
         .success-overlay.show { opacity: 1; }
@@ -229,15 +204,16 @@
         #flower-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 99; overflow: hidden; }
         .petal {
             position: absolute;
-            background: rgba(255, 182, 193, 0.85); /* 여리여리한 벚꽃 핑크 */
-            border-radius: 15px 0 15px 0; /* 꽃잎 모양 */
+            background: rgba(255, 182, 193, 0.85); 
+            border-radius: 15px 0 15px 0; 
             width: 12px; height: 12px;
             box-shadow: 0 0 8px rgba(255,105,180,0.4);
             animation: fall linear forwards, sway 2s ease-in-out infinite alternate;
         }
         @keyframes fall { to { top: 110%; } }
         @keyframes sway { from { transform: translateX(-20px) rotate(0deg); } to { transform: translateX(20px) rotate(60deg); } }
-/* 📖 튜토리얼 배경 (sub.jpg 적용) */
+
+        /* 📖 튜토리얼 배경 (sub.jpg 적용) */
         .tutorial-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: url('assets/sub.jpg') no-repeat center center;
@@ -255,24 +231,25 @@
 
         .tutorial-title { font-weight: 300; letter-spacing: 4px; margin-bottom: 25px; font-size: 22px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .step-list { text-align: left; display: inline-block; }
-.step-item { 
+        .step-item { 
             display: flex; 
             align-items: center; 
-            margin-bottom: 18px; /* 간격을 살짝 넓혀서 여유롭게 */
-            font-size: 14.5px;   /* 글씨 크기 미세 조정 */
-            line-height: 1.5;    /* 줄 간격을 넓혀 고급스러운 가독성 확보 */
-            letter-spacing: 0.5px; /* 자간을 살짝 벌려 세련미 추가 */
+            margin-bottom: 18px; 
+            font-size: 14.5px;   
+            line-height: 1.5;    
+            letter-spacing: 0.5px; 
         }        
-    .step-num { 
+        .step-num { 
             width: 24px; height: 24px; background: white; color: #ff69b4; 
             border-radius: 50%; display: flex; justify-content: center; align-items: center;
             font-weight: bold; margin-right: 12px; flex-shrink: 0;
         }
         .step-item b { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
-/* 👇 힌트 버튼 & 빛나는 효과 CSS 👇 */
+
+        /* 👇 힌트 버튼 & 빛나는 효과 CSS 👇 */
         #hint-btn {
             position: absolute;
-            bottom: 25px;
+            bottom: 120px;
             left: 25px; 
             padding: 10px 18px;
             background: rgba(255, 255, 255, 0.2);
@@ -378,27 +355,11 @@
         </div>
 
         <div class="palette-ui" id="palette"></div>
-    </div>
-
-    <script src="script.js?v=7"></script>
-</body>
-</html>
-[수정 후 (딱 한 줄 추가!)]
-
-HTML
-        <div class="canvas-area" id="drop-zone">
-            <canvas id="lip-canvas"></canvas>
-            <div id="success-ui" class="success-overlay">
-                <div class="success-text">PERFECT SHADE<br><span style="font-size:20px;">Color development complete</span></div>
-            </div>
-        </div>
-
-        <div class="palette-ui" id="palette"></div>
         
         <div id="hint-btn">💡 HINT</div>
 
     </div>
 
-    <script src="script.js?v=8"></script>
+    <script src="script.js?v=10"></script>
 </body>
 </html>
