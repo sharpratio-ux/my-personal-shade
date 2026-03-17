@@ -250,32 +250,38 @@
 /* 👇 힌트 버튼 (타이틀 화면 뒤에 숨고, 왼쪽으로 이동!) 👇 */
         /* 👇 힌트 버튼 가독성 개선 👇 */
    /* 👇 힌트 버튼 위치를 왼쪽 중간으로 이동! 👇 */
+       /* 👇 힌트 버튼 (크기 축소 및 위치 170px 조정) 👇 */
         #hint-btn {
             position: absolute;
             
-            /* 💡 세로 위치를 크게 높여서 원하는 위치로 이동 (대략 350px) */
-            bottom: 150px; 
-            
-            /* 💡 가로 위치는 기존처럼 왼쪽 구석 (23px) 유지 */
+            /* 💡 기획자님 요청: 세로 위치 170px로 고정 */
+            bottom: 170px; 
             left: 23px; 
             
-            padding: 10px 18px;
+            /* 💡 버튼 크기 축소 (기존 10px 18px -> 7px 14px) */
+            padding: 7px 14px; 
+            
             background: rgba(255, 215, 0, 0.4); 
             border: 1px solid rgba(255, 215, 0, 0.8);
-            border-radius: 20px;
-            color: #b8860b; /* 가독성 개선된 딥 골드 색상 */
-            font-size: 14px;
+            border-radius: 15px; /* 버튼이 작아졌으니 테두리 둥글기도 최적화 */
+            
+            color: #b8860b; 
+            
+            /* 💡 글씨 크기 축소 (기존 14px -> 12px) */
+            font-size: 12px; 
             font-weight: 800;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px; /* 글씨에 맞춰 자간 미세 조정 */
+            
             cursor: pointer;
-            z-index: 150; /* 게임 UI 위에 표시 */
+            z-index: 150; 
             backdrop-filter: blur(5px);
-            box-shadow: 0 4px 6px rgba(139, 69, 19, 0.2);
+            
+            /* 버튼이 앙증맞아졌으니 그림자도 살짝 가볍게 */
+            box-shadow: 0 3px 5px rgba(139, 69, 19, 0.2); 
             transition: all 0.3s ease;
         }
         
         #hint-btn:active { transform: scale(0.95); }
-
         .chip-glow {
             box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.8), inset 0 0 10px rgba(255, 215, 0, 0.5) !important;
             border: 2px solid #fff !important;
