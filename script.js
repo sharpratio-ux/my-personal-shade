@@ -63,21 +63,24 @@ generateStage() {
         let reqCount = 2;
         let trapCount = 2;
 
-        // 🏆 1. 기획자님표 5라운드 시스템 기본 세팅 (칩 개수)
+        // 🏆 기획자님 맞춤형 '초미세 밸런스' 오르막길 조정!
         if (stage <= 10) { 
-            // Round 1 (1~10): Beginner
+            // Round 1 (1~10): Beginner (총 4개)
             reqCount = 2; trapCount = 2; 
+        } else if (stage <= 20) { 
+            // 🌟 Round 2-1 (11~20): 난이도 완화! (총 5개 - 정답2, 헷갈리는거1, 다른거2)
+            reqCount = 2; trapCount = 3; 
         } else if (stage <= 30) { 
-            // Round 2 (11~30): Colorist
+            // 🌟 Round 2-2 (21~30): Colorist 본격화 (총 6개)
             reqCount = 2; trapCount = 4; 
         } else if (stage <= 50) { 
-            // Round 3 (31~50): Pro Artist
+            // Round 3 (31~50): Pro Artist (총 6개, 3색 조합)
             reqCount = 3; trapCount = 3; 
         } else if (stage <= 70) { 
-            // Round 4 (51~70): Master
+            // Round 4 (51~70): Master (총 8개)
             reqCount = 3; trapCount = 5; 
         } else {
-            // Round 5 (71~): Legendary Muse (하드코어)
+            // Round 5 (71~): Legendary Muse (총 8개, 하드코어)
             reqCount = 3; trapCount = 5; 
         }
 
@@ -85,62 +88,67 @@ generateStage() {
         this.config.currentMixed = [];
         this.config.isDone = false;
         
-        // 💎 새 스테이지 진입 시 오답 스택(누진세) 초기화
+        // 💎 새 스테이지 진입 시 오답 스택 초기화
         this.config.currentStageFails = 0;
-    // 💡 힌트 초기화 및 버튼 다시 살리기
+        
+        // 💡 힌트 초기화 및 버튼 다시 살리기
         this.config.hintsUsed = 0;
         const hintBtn = document.getElementById('hint-btn');
         if (hintBtn) hintBtn.style.display = 'block';
-        this.updateRPDisplay(); // 명성치 UI 갱신
+        this.updateRPDisplay(); 
 
-        // UI 업데이트 (물음표 뺀 깔끔한 텍스트)
         document.getElementById('req-count-text').innerText = `${reqCount} colors`;
         document.getElementById('stage-ui').innerText = `STAGE ${stage}`;
 
-        // 🎨 2. 64색 글로벌 감성 팔레트 추출 로직
-        // 전체 8개 그룹을 랜덤하게 섞음
+        // 🎨 64색 글로벌 감성 팔레트 추출 로직
         let groups = [...this.config.colorGroups].sort(() => 0.5 - Math.random());
-        // 메인이 될 정답 그룹을 1개 뽑아서 랜덤하게 섞음
         let mainGroup = [...groups[0]].sort(() => 0.5 - Math.random()); 
 
-        // 일단 정답 칩들부터 빼놓기
         this.config.answers = mainGroup.slice(0, reqCount);
 
         // 🎯 3. 라운드별 치밀한 함정(Trap) 난이도 로직
         if (stage <= 10) {
-            // [Round 1] 극명한 대비 (완전히 다른 그룹 2개에서 1개씩)
+            // [1~10] 완전 다른 그룹 2개
             let trap1 = [...groups[1]].sort(() => 0.5 - Math.random())[0];
             let trap2 = [...groups[2]].sort(() => 0.5 - Math.random())[0];
             this.config.traps = [trap1, trap2];
             
-        } else if (stage <= 30) {
-            // [Round 2] 🌟 기획자님 핵심 밸런스 패치! (비슷한 톤 2개 + 확실히 다른 톤 2개)
+        } else if (stage <= 20) {
+            // 🌟 [11~20] 난이도 대폭 하향: 헷갈리는 색은 딱 1개만 등장!
             let remainingMain = mainGroup.filter(c => !this.config.answers.includes(c));
-            let similarTraps = remainingMain.slice(0, 2); // 정답과 헷갈리는 색 2개
+            let similarTraps = remainingMain.slice(0, 1); // 👈 1개만 뽑음!
             
-            // 다른 그룹 2개에서 각각 1개씩 확실히 튀는 색 2개 뽑기
+            let diffTrap1 = [...groups[1]].sort(() => 0.5 - Math.random())[0];
+            let diffTrap2 = [...groups[2]].sort(() => 0.5 - Math.random())[0];
+            
+            this.config.traps = [...similarTraps, diffTrap1, diffTrap2];
+            
+        } else if (stage <= 30) {
+            // 🌟 [21~30] 헷갈리는 색 2개 등장 (기존 11단계 난이도)
+            let remainingMain = mainGroup.filter(c => !this.config.answers.includes(c));
+            let similarTraps = remainingMain.slice(0, 2); 
+            
             let diffTrap1 = [...groups[1]].sort(() => 0.5 - Math.random())[0];
             let diffTrap2 = [...groups[2]].sort(() => 0.5 - Math.random())[0];
             
             this.config.traps = [...similarTraps, diffTrap1, diffTrap2];
             
         } else if (stage <= 50) {
-            // [Round 3] 3색 조합 집중 (비슷한 색 2개 + 뜬금없는 색 1개)
+            // [31~50] 3색 조합 집중 (비슷한 색 2개 + 뜬금없는 색 1개)
             let remainingMain = mainGroup.filter(c => !this.config.answers.includes(c));
             let similarTraps = remainingMain.slice(0, 2); 
             let diffTrap = [...groups[1]].sort(() => 0.5 - Math.random())[0]; 
             this.config.traps = [...similarTraps, diffTrap];
             
         } else if (stage <= 70) {
-            // [Round 4] 하드코어 진입 (함정 5개 중 4개는 비슷하게, 1개만 다르게)
+            // [51~70] 하드코어 진입 (함정 5개 중 4개는 비슷하게, 1개만 다르게)
             let remainingMain = mainGroup.filter(c => !this.config.answers.includes(c));
             let similarTraps = remainingMain.slice(0, 4);
             let diffTrap = [...groups[1]].sort(() => 0.5 - Math.random())[0];
             this.config.traps = [...similarTraps, diffTrap];
             
         } else {
-            // [Round 5] 절대 색감의 영역 (함정 5개가 전부 정답과 똑같은 그룹에서 출현!!)
-            // 그룹당 8개 색상이므로, 정답 3개 + 함정 5개 = 8개 딱 맞아 떨어짐!
+            // [71~] 절대 색감의 영역 (전부 다 비슷한 색상)
             let remainingMain = mainGroup.filter(c => !this.config.answers.includes(c));
             this.config.traps = remainingMain.slice(0, trapCount); 
         }
